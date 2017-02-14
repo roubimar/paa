@@ -98,15 +98,15 @@ namespace PAA
 
         private static void GenerateGenom(Entity child, Generation generation, Entity firstParent, Entity secondParent, int sum, int index)
         {
-            var random = Parameters.RANDOM.Next(0, sum);
-            if (random < firstParent.GenomImpactClausules[index])
-            {
-                child.Genom[index] = firstParent.Genom[index];
-            }
-            else
-            {
-                child.Genom[index] = secondParent.Genom[index];
-            }
+                if (Parameters.RANDOM.Next(0, sum) < firstParent.GenomImpactClausules[index])
+                {
+                    child.Genom[index] = firstParent.Genom[index];
+                }
+                else
+                {
+                    child.Genom[index] = secondParent.Genom[index];
+                }
+            
         }
 
         //Custom crossover
@@ -117,9 +117,25 @@ namespace PAA
                 var firstChild = new Entity(generation.GenomSize);
                 var secondChild = new Entity(generation.GenomSize);
 
+                var map = new bool[generation.GenomSize];
 
                 for (int i = 0; i < generation.GenomSize; i++)
                 {
+                    map[i] = Parameters.RANDOM.NextDouble() > 0.5;
+                }
+
+                for (int i = 0; i < generation.GenomSize; i++)
+                {
+                    //if (map[i])
+                    //{
+                    //    firstChild.Genom[i] = firstParent.Genom[i];
+                    //    secondChild.Genom[i] = secondParent.Genom[i];
+                    //}
+                    //else
+                    //{
+                    //    firstChild.Genom[i] = secondParent.Genom[i];
+                    //    secondChild.Genom[i] = firstParent.Genom[i];
+                    //}
                     var firstImpact = firstParent.GenomImpactClausules[i];
                     var secondImpact = secondParent.GenomImpactClausules[i];
                     var sum = firstImpact + secondImpact;

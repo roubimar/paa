@@ -37,7 +37,7 @@ namespace PAA
 
             if (Satisfability)
             {
-                Fitness = Parameters.CLAUSULES_COUNT * Parameters.FITNESS_CORRECTNESS_VALUE + Weight * Parameters.FITNESS_COST_VALUE + GenomImpactClausules.Sum();
+                Fitness = Parameters.CLAUSULES_COUNT * Parameters.FITNESS_CORRECTNESS_VALUE + Weight * Parameters.FITNESS_COST_VALUE;
             }
             else
             {
