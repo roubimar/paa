@@ -126,16 +126,6 @@ namespace PAA
 
                 for (int i = 0; i < generation.GenomSize; i++)
                 {
-                    //if (map[i])
-                    //{
-                    //    firstChild.Genom[i] = firstParent.Genom[i];
-                    //    secondChild.Genom[i] = secondParent.Genom[i];
-                    //}
-                    //else
-                    //{
-                    //    firstChild.Genom[i] = secondParent.Genom[i];
-                    //    secondChild.Genom[i] = firstParent.Genom[i];
-                    //}
                     var firstImpact = firstParent.GenomImpactClausules[i];
                     var secondImpact = secondParent.GenomImpactClausules[i];
                     var sum = firstImpact + secondImpact;

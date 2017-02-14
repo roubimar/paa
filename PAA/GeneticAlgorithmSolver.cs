@@ -62,19 +62,16 @@ namespace PAA
             Elitism(newGeneration, generation);
 
             newGeneration.Entities.Sort(EntityComparator.Instance);
-            newGeneration.CheckDifference();
             newGeneration.BestEntity = newGeneration.Entities.First();
 
             bool best = false;
             if (BestEntity == null || newGeneration.BestEntity.Fitness > BestEntity.Fitness)
             {
                 BestEntity = newGeneration.BestEntity;
-                best = true;
+                PrintBest();
             }
 
             generationCount++;
-            if (best)
-                PrintBest();
             UpdateMutationFactor(newGeneration);
             return newGeneration;
         }
