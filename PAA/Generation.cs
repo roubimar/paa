@@ -264,7 +264,10 @@ namespace PAA
             var coef = Parameters.POPULATION_SIZE / groups.Count;
             var random = Parameters.RANDOM.Next(0, coef);
 
-            return generation.EntitiesByImpact[i * coef + random];
+            return 
+             Parameters.RANDOM.NextDouble() > 0.2 ?
+             generation.Entities[i * coef + random] :
+             generation.EntitiesByImpact[Parameters.POPULATION_SIZE -(i * coef + random) - 1];
         }
 
         // GrouppingSelection

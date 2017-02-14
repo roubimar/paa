@@ -45,7 +45,7 @@ namespace PAA
         {
             var newGeneration = new Generation(generation.GenomSize, generation.Weights, evaluationMethod);
 
-            generation.EntitiesByImpact = generation.Entities.OrderBy(y => y.GenomImpactClausules.Sum()).ToList();
+            //generation.EntitiesByImpact = generation.Entities.OrderBy(y => y.GenomImpactClausules.Sum()).ToList();
             for (int i = 0; i < (Parameters.POPULATION_SIZE + 1)/ 2 - Parameters.ELITES_COUNT; i++)
             {
                 var firstParent = generation.SelectionMethod(generation);
@@ -144,22 +144,6 @@ namespace PAA
                         Parameters.MUTATION_FACTOR = Parameters.MAXIMUM_MUTATION_FACTOR;
                     }
                 }
-                //if (SameSteps % 25 == 0)
-                //{
-                //    newGeneration.Entities.Sort(CustomEntityComparator.Instance);
-                //}
-                //if (SameSteps % 17 == 0)
-                //{
-                //    Parameters.CROSSOVER_TYPE = Parameters.CROSSOVER_TYPE == CrossoverEnum.Custom ?
-                //        CrossoverEnum.Simple : Parameters.CROSSOVER_TYPE == CrossoverEnum.Simple ?
-                //        CrossoverEnum.Random : CrossoverEnum.Custom;
-                //}
-                //if (SameSteps % 13 == 0)
-                //{
-                //    Parameters.SELECTION_TYPE = Parameters.SELECTION_TYPE == SelectionEnum.Rank ?
-                //        SelectionEnum.Groupping : Parameters.SELECTION_TYPE == SelectionEnum.Groupping ?
-                //        SelectionEnum.Simple : SelectionEnum.Rank;
-                //}
             }
             else
             {

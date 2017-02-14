@@ -90,24 +90,6 @@ namespace PAA
                     GenomImpactClausules[array[i].Item1]++;
                 }
             }
-
-
-
-            //foreach (var literalInClausule in values)
-            //{
-            //    var index = GeneticAlgorithmSolver.ArgumentsDictionary[literalInClausule.Key];
-            //    var valueInGenom = Genom[index];
-            //    if (literalInClausule.Value)
-            //    {
-            //        if (valueInGenom)
-            //            GenomImpactClausules[index]++;
-            //    }
-            //    else
-            //    {
-            //        if (!valueInGenom)
-            //            GenomImpactClausules[index]++;
-            //    }
-            //}
         }
     }
 }
