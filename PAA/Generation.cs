@@ -15,6 +15,7 @@ namespace PAA
         public List<Entity> Entities { get; set; }
         public List<Entity> EntitiesByImpact { get; set; }
         public double Certainity { get; set; }
+        public List<Entity> EntitiesByHamilton { get; internal set; }
 
         public delegate void Crossover(Generation g, Entity a, Entity b);
         public Crossover CrossoverMethod;
@@ -106,15 +107,15 @@ namespace PAA
 
         private static void GenerateGenom(Entity child, Generation generation, Entity firstParent, Entity secondParent, int sum, int index)
         {
-            var random = Parameters.RANDOM.Next(0, sum);
-            if (random < firstParent.GenomImpactClausules[index])
-            {
-                child.Genom[index] = firstParent.Genom[index];
-            }
-            else
-            {
-                child.Genom[index] = secondParent.Genom[index];
-            }
+                if (Parameters.RANDOM.Next(0, sum) < firstParent.GenomImpactClausules[index])
+                {
+                    child.Genom[index] = firstParent.Genom[index];
+                }
+                else
+                {
+                    child.Genom[index] = secondParent.Genom[index];
+                }
+            
         }
 
         //Custom crossover
@@ -125,9 +126,25 @@ namespace PAA
                 var firstChild = new Entity(generation.GenomSize, generation.EvaluationMethod);
                 var secondChild = new Entity(generation.GenomSize, generation.EvaluationMethod);
 
+                var map = new bool[generation.GenomSize];
 
                 for (int i = 0; i < generation.GenomSize; i++)
                 {
+                    map[i] = Parameters.RANDOM.NextDouble() > 0.5;
+                }
+
+                for (int i = 0; i < generation.GenomSize; i++)
+                {
+                    //if (map[i])
+                    //{
+                    //    firstChild.Genom[i] = firstParent.Genom[i];
+                    //    secondChild.Genom[i] = secondParent.Genom[i];
+                    //}
+                    //else
+                    //{
+                    //    firstChild.Genom[i] = secondParent.Genom[i];
+                    //    secondChild.Genom[i] = firstParent.Genom[i];
+                    //}
                     var firstImpact = firstParent.GenomImpactClausules[i];
                     var secondImpact = secondParent.GenomImpactClausules[i];
                     var sum = firstImpact + secondImpact;
@@ -227,28 +244,14 @@ namespace PAA
             return generation.Entities[i - 1];
         }
 
-        private static int CalculateHamiltonLength(Entity counted, Entity referenced)
-        {
-            int hamiltonLength = 0;
-            for (int i = 0; i < counted.Genom.Length; i++)
-            {
-                if (counted.Genom[i] != referenced.Genom[i])
-                    hamiltonLength++;
-            }
 
-            if (referenced.Fitness * 0.7 > counted.Fitness)
-            {
-                return -1;
-            }
-            return hamiltonLength;
-        }
 
         // CustomSelection
         public static Entity CustomSelection(Generation generation)
         {            
             var tmp = 0;
 
-            var groups = new List<int>() { 35, 25, 20, 10, 5, 3, 2 };
+            var groups = new List<int>() { 40, 25, 15, 10, 5, 3, 2 };
             var result = Parameters.RANDOM.Next(0, 101);
             int i = 0;
             foreach (var item in groups)

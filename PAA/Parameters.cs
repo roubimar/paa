@@ -107,6 +107,9 @@ namespace PAA
         // General Certainity property
         public static bool CERTAINITY = false;
 
+        // Global weights for manipulation
+        public static int[] Weights;
+
         #endregion
 
     }

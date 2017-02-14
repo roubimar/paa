@@ -20,7 +20,7 @@ namespace PAA
 
             for (int i = 0; i < literalsCount; i++)
             {
-                weights[i] = random.Next(1, maxWeight);
+                weights[i] = random.Next(1, maxWeight + 1 );
             }
 
             return weights;
