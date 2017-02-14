@@ -7,6 +7,6 @@
 
     public enum SelectionEnum
     {
-        Simple, Groupping, Rank, Custom
+        Simple, Groupping, Rank
     }
 }

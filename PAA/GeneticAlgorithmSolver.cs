@@ -8,44 +8,49 @@ namespace PAA
 {
     public class GeneticAlgorithmSolver
     {
+        // Static properties for global usage
+        public static Dictionary<string, int> ArgumentsDictionary { get; set; }
+        public static Entity BestEntity { get; set; }
+        public static int[] Weights { get; set; }
+        public static Delegate EvaluationMethod;
+
         private int SameSteps = 0;
-
         private int generationCount = 0;
-
-        private int[] weights;
-        private int[] heatMap;
-        private Delegate evaluationMethod;
+        
         private Dictionary<string, ParameterExpression> parametersDictionary;
-        public static Dictionary<string, int> ArgumentsDictionary;
-        public static Entity BestEntity;
+        private int genomSize;
         private Generation currentGeneration;
 
         public GeneticAlgorithmSolver(int[] weights, Delegate evaluationMethod, Dictionary<string, ParameterExpression> parametersDictionary, Dictionary<string, int> argumentsDictionary)
         {
-            this.weights = weights;
-            this.evaluationMethod = evaluationMethod;
+            Weights = weights;
+            EvaluationMethod = evaluationMethod;
             this.parametersDictionary = parametersDictionary;
+            genomSize = parametersDictionary.Count;
             ArgumentsDictionary = argumentsDictionary;
 
             InitAlghoritm();
         }
 
+        /// <summary>
+        /// Reinicialization of alghorithm for repetitive running
+        /// </summary>
         private void InitAlghoritm()
         {
-            heatMap = new int[weights.Length];
-
             generationCount = 0;
-            currentGeneration = new Generation(weights.Length, weights, evaluationMethod);
+            currentGeneration = new Generation(genomSize);
             var bestEntity = currentGeneration.GenerateRandomEntity();
             currentGeneration.BestEntity = bestEntity;
             BestEntity = bestEntity;
         }
 
+        /// <summary>
+        /// Evolution of given generation to outgoing generation
+        /// </summary>
         public Generation Evolution(Generation generation)
         {
-            var newGeneration = new Generation(generation.GenomSize, generation.Weights, evaluationMethod);
-
-            //generation.EntitiesByImpact = generation.Entities.OrderBy(y => y.GenomImpactClausules.Sum()).ToList();
+            var newGeneration = new Generation(genomSize);
+            
             for (int i = 0; i < (Parameters.POPULATION_SIZE + 1)/ 2 - Parameters.ELITES_COUNT; i++)
             {
                 var firstParent = generation.SelectionMethod(generation);
@@ -84,7 +89,6 @@ namespace PAA
             }
 
             newGeneration.Entities.Sort(EntityComparator.Instance);
-            newGeneration.CheckDifference();
             newGeneration.BestEntity = newGeneration.Entities.First();
 
             bool best = false;
@@ -96,13 +100,12 @@ namespace PAA
 
             generationCount++;
             if (best)
-                PrintB();
-            //PrintBest();
+                PrintBest();
             UpdateMutationFactor(newGeneration);
             return newGeneration;
         }
 
-        private void PrintB()
+        private void PrintBest()
         {
             Console.WriteLine("SATISFY: {6}, BEST: {0}, GENERATION_STEP: {3}, MUTATION_FACTOR: {4}, IMPACT: {5} ",
                 BestEntity.Fitness, currentGeneration.Entities.Where(x => x.Satisfability).Count(),
@@ -116,24 +119,19 @@ namespace PAA
             Console.WriteLine();
         }
 
-        private void PrintBest()
-        {
-            if (generationCount % 50 == 0)
-            {
-                
-            }
-        }
-
+        /// <summary>
+        /// Adaptable mechanism for increasing mutation factor when stuck in local maximum
+        /// </summary>
         private void UpdateMutationFactor(Generation newGeneration)
         {
-            var tmpFitness = newGeneration.BestEntity.Fitness;
-
-
-            if (currentGeneration.BestEntity.Fitness == tmpFitness)
+            // If fitness of the best entity of previous generation is the sema like in present one
+            // Increase Mutation factor
+            if (currentGeneration.BestEntity.Fitness == newGeneration.BestEntity.Fitness)
             {
                 SameSteps++;
                 if (SameSteps % Parameters.MUTATION_STEP == 0)
                 {
+                    // For generation without satisfable entity set maximum mutation factor immediately for quicker find some solution
                     if (currentGeneration.BestEntity.Satisfability)
                     {
                         Parameters.MUTATION_FACTOR += Parameters.MUTATION_STEP_SIZE;
@@ -149,21 +147,18 @@ namespace PAA
             {
                 SameSteps = 0;
                 Parameters.MUTATION_FACTOR = Parameters.MINIMUM_MUTATION_FACTOR;
-                for (int i = 0; i < newGeneration.BestEntity.Genom.Length; i++)
-                {
-                    if (newGeneration.BestEntity.Genom[i] != currentGeneration.BestEntity.Genom[i])
-                        heatMap[i]++;
-                }
-            }
-
-            Parameters.CERTAINITY = Parameters.CERTAINITY || SameSteps > 500;
+            }            
             currentGeneration = newGeneration;
         }
 
-        public Generation Evolve()
+        /// <summary>
+        /// Main method which starts the evolution
+        /// </summary>
+        /// <returns></returns>
+        public void Evolve()
         {
             InitAlghoritm();
-            var generation = new Generation(parametersDictionary.Count(), weights, evaluationMethod);
+            var generation = new Generation(genomSize);
             generation.InitializePopulation();
             Parameters.CERTAINITY = false;
             for (int i = 0; i < Parameters.GENERATIONS_COUNT; i++)
@@ -172,26 +167,23 @@ namespace PAA
                 if (Parameters.CERTAINITY)
                     break;
             }
-            return generation;
         }
 
         public void Run()
         {
-            var time = new Stopwatch();
-            var milliseconds = 0L;
-            time.Restart();
-
-            Generation generation = Evolve();
-            milliseconds = time.ElapsedMilliseconds;
-            Console.WriteLine("\nGenetic Alghoritm:\t{0} ms\n", milliseconds);
+            Evolve();
             PrintBestSolution();
         }
 
+        /// <summary>
+        /// Output of best global known solution
+        /// </summary>
         private void PrintBestSolution()
         {
+            Console.WriteLine("\nGenetic Alghoritm:\n");
             if (!BestEntity.Satisfability)
             {
-                Console.WriteLine("There doesn't exist solution\nBest solution has {0} clausules TRUE, Fitness {1}, Certainity {2:0.00}", BestEntity.CorrectClausules, BestEntity.Fitness, currentGeneration.Certainity);
+                Console.WriteLine("There doesn't exist solution\nBest solution has {0} clausules TRUE, Fitness {1}", BestEntity.CorrectClausules, BestEntity.Fitness);
                 return;
             }
             for (int i = 0; i < BestEntity.Genom.Length; i++)
@@ -200,14 +192,6 @@ namespace PAA
                 Console.Write(string.Format("{0,3} ", BestEntity.Genom[i] ? "1" : "0"));
             }
             Console.WriteLine("\n");
-            Console.WriteLine("HeatMap:");
-
-            for (int i = 0; i < heatMap.Length; i++)
-            {
-                Console.Write(string.Format("{0,3} ", heatMap[i]));
-            }
-            Console.WriteLine("\n");
-
 
             Console.WriteLine("Impact:");
 
@@ -216,7 +200,7 @@ namespace PAA
                 Console.Write(string.Format("{0,3} ", BestEntity.GenomImpactClausules[i]));
             }
 
-            Console.WriteLine("\nWeight: {0}\nCertainity: {1:0.00}\n", BestEntity.Weight, currentGeneration.Certainity);
+            Console.WriteLine("\nWeight: {0}\n", BestEntity.Weight);
 
         }
 

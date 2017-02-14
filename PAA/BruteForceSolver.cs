@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PAA
 {
@@ -39,31 +37,19 @@ namespace PAA
             if (bools == null)
             {
                 bools = new bool[parametersDictionary.Count()];
-                //foreach (var par in parametersDictionary.OrderBy(x => x.Key))
-                //{
-                //    Console.Write(string.Format("{0}\t", par.Value.Name))
-                //}
-                //Console.WriteLine("Y\tCC\tW")
             }
             if (position == parametersDictionary.Count())
             {
                 var configuration = bools.Cast<object>().ToList();
-                configuration.Add(new Entity(parametersDictionary.Count(), evaluationMethod));
+                configuration.Add(new Entity(parametersDictionary.Count()));
                 var result = evaluationMethod.DynamicInvoke(configuration.ToArray());
                 var weight = 0;
                 if (((Entity)result).Satisfability)
                 {
                     for (int i = 0; i < parametersDictionary.Count(); i++)
                     {
-                        // print of configuration variables
-                        //Console.Write(string.Format("{0}\t", bools[i] ? "1" : "0"))
-                        // count overall weight of true literals
                         if (bools[i]) weight += weights[i];
                     }
-
-                    // print of result and partial info about satisfied clausules
-                    //Console.WriteLine(string.Format("{0}\t{1}\t{2}", ((Entity)result).Satisfability, ((Entity)result).CorrectClausules, weight))
-
                     if (weight > bestBFSolution.Weight)
                     {
                         bestBFSolution.Weight = weight;
@@ -99,6 +85,9 @@ namespace PAA
             return true;
         }
 
+        /// <summary>
+        /// Run the alghoritm
+        /// </summary>
         public void Run()
         {
             var time = new Stopwatch();

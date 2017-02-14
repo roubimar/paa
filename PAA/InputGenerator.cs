@@ -4,6 +4,9 @@ using System.Linq;
 
 namespace PAA
 {
+    /// <summary>
+    /// Generator of desired 3-SAT instances
+    /// </summary>
     public class InputGenerator
     {
         private Random random;
@@ -14,6 +17,9 @@ namespace PAA
             random = new Random();
         }
 
+        /// <summary>
+        /// Generate weights for number of literals
+        /// </summary>
         private int [] GenerateWeights(int literalsCount, int maxWeight)
         {
             var weights = new int[literalsCount];
@@ -22,14 +28,16 @@ namespace PAA
             {
                 weights[i] = random.Next(1, maxWeight);
             }
-
             return weights;
         }
 
+        /// <summary>
+        /// Generate formula of 3-SAT (for desired count of literals of desired clausules)
+        /// For each clausule is generated trio of distinguished literals and with probability of 50% it is negated
+        /// </summary>
         private string GenerateFormula(int literalsCount, int clausulesCount)
         {
             var formula = string.Empty;
-
             var clausules = new List<string>();
             for (int i = 0; i < clausulesCount; i++)
             {
@@ -56,6 +64,13 @@ namespace PAA
             return string.Join(" & ", clausules); 
         }
 
+        /// <summary>
+        /// Generate Input for alghoritmhs
+        /// </summary>
+        /// <param name="literalsCount">desired literals count - this is randomed and could be lower</param>
+        /// <param name="clausulesCount">number of clausules</param>
+        /// <param name="maxWeight">max weight of one literal</param>
+        /// <returns>String inf format: [Number of literals(N)] [Weight_1..N] [(X_1..N | X_1..N | X_1..N) & (...) ]</returns>
         public string GenerateInput(int literalsCount, int clausulesCount, int maxWeight)
         {
             if(literalsCount < 3 || clausulesCount < Math.Ceiling((double)literalsCount / 3))
@@ -66,14 +81,7 @@ namespace PAA
 
             var formula = GenerateFormula(literalsCount + 1, clausulesCount);
             var weights = GenerateWeights(allLiterals.Count(), maxWeight);
-
-            //for (int i = 0 i < weights.Length i++)
-            //{
-            //    Console.Write(string.Format("{0}: {1},", allLiterals.OrderBy(x => x).ElementAt(i), weights[i]));
-            //}
-            //Console.WriteLine();
-            //Console.WriteLine(formula);
-
+            
             return string.Format("{0} {1} {2}", allLiterals.Count(), string.Join(" ", weights), formula);
         }
     }

@@ -7,14 +7,11 @@ namespace PAA
 {
     public class Generation
     {
+        // Best entity of the currenct generation
         public Entity BestEntity;
 
         public int GenomSize { get; set; }
-        public Delegate EvaluationMethod { get; set; }
-        public int[] Weights { get; set; }
         public List<Entity> Entities { get; set; }
-        public List<Entity> EntitiesByImpact { get; set; }
-        public double Certainity { get; set; }
 
         public delegate void Crossover(Generation g, Entity a, Entity b);
         public Crossover CrossoverMethod;
@@ -22,11 +19,9 @@ namespace PAA
         public delegate Entity Selection(Generation g);
         public Selection SelectionMethod;
 
-        public Generation(int size, int[] weights, Delegate evaluationMethod)
+        public Generation(int genomSize)
         {
-            Weights = weights;
-            GenomSize = size;
-            EvaluationMethod = evaluationMethod;
+            GenomSize = genomSize;
             Entities = new List<Entity>();
 
             InitiateOperators();
@@ -49,9 +44,6 @@ namespace PAA
 
             switch (Parameters.SELECTION_TYPE)
             {
-                case SelectionEnum.Custom:
-                    SelectionMethod = CustomSelection;
-                    break;
                 case SelectionEnum.Simple:
                     SelectionMethod = SimpleSelection;
                     break;
@@ -77,12 +69,12 @@ namespace PAA
 
         public Entity GenerateRandomEntity()
         {
-            var entity = new Entity(GenomSize, EvaluationMethod);
+            var entity = new Entity(GenomSize);
             for (int i = 0; i < GenomSize; i++)
             {
                 entity.Genom[i] = Parameters.RANDOM.NextDouble() > 0.5;
             }
-            entity.CountFitness(Weights);
+            entity.CountFitness();
             return entity;
         }
 
@@ -91,8 +83,8 @@ namespace PAA
         {
             if (!CrossoverBefore(generation, firstParent, secondParent))
             {
-                var firstChild = new Entity(generation.GenomSize, generation.EvaluationMethod);
-                var secondChild = new Entity(generation.GenomSize, generation.EvaluationMethod);
+                var firstChild = new Entity(generation.GenomSize);
+                var secondChild = new Entity(generation.GenomSize);
 
                 for (int i = 0; i < generation.GenomSize; i++)
                 {
@@ -122,8 +114,8 @@ namespace PAA
         {
             if (!CrossoverBefore(generation, firstParent, secondParent))
             {
-                var firstChild = new Entity(generation.GenomSize, generation.EvaluationMethod);
-                var secondChild = new Entity(generation.GenomSize, generation.EvaluationMethod);
+                var firstChild = new Entity(generation.GenomSize);
+                var secondChild = new Entity(generation.GenomSize);
 
 
                 for (int i = 0; i < generation.GenomSize; i++)
@@ -157,8 +149,8 @@ namespace PAA
         {
             if (!CrossoverBefore(generation, firstParent, secondParent))
             {
-                var firstChild = new Entity(generation.GenomSize, generation.EvaluationMethod);
-                var secondChild = new Entity(generation.GenomSize, generation.EvaluationMethod);
+                var firstChild = new Entity(generation.GenomSize);
+                var secondChild = new Entity(generation.GenomSize);
                 var firstCrossPoint = Parameters.RANDOM.Next(0, generation.GenomSize);
                 var secondCrossPoint = Parameters.RANDOM.Next(0, generation.GenomSize);
 
@@ -193,8 +185,8 @@ namespace PAA
             firstChild.Mutation();
             secondChild.Mutation();
 
-            firstChild.CountFitness(generation.Weights);
-            secondChild.CountFitness(generation.Weights);
+            firstChild.CountFitness();
+            secondChild.CountFitness();
 
             generation.Entities.Add(firstChild);
             generation.Entities.Add(secondChild);
@@ -225,49 +217,6 @@ namespace PAA
                     break;
             }
             return generation.Entities[i - 1];
-        }
-
-        private static int CalculateHamiltonLength(Entity counted, Entity referenced)
-        {
-            int hamiltonLength = 0;
-            for (int i = 0; i < counted.Genom.Length; i++)
-            {
-                if (counted.Genom[i] != referenced.Genom[i])
-                    hamiltonLength++;
-            }
-
-            if (referenced.Fitness * 0.7 > counted.Fitness)
-            {
-                return -1;
-            }
-            return hamiltonLength;
-        }
-
-        // CustomSelection
-        public static Entity CustomSelection(Generation generation)
-        {            
-            var tmp = 0;
-
-            var groups = new List<int>() { 35, 25, 20, 10, 5, 3, 2 };
-            var result = Parameters.RANDOM.Next(0, 101);
-            int i = 0;
-            foreach (var item in groups)
-            {
-                tmp += item;
-                if (result <= tmp)
-                {
-                    break;
-                }
-                i++;
-            }
-
-            var coef = Parameters.POPULATION_SIZE / groups.Count;
-            var random = Parameters.RANDOM.Next(0, coef);
-
-            return 
-             Parameters.RANDOM.NextDouble() > 0.2 ?
-             generation.Entities[i * coef + random] :
-             generation.EntitiesByImpact[Parameters.POPULATION_SIZE -(i * coef + random) - 1];
         }
 
         // GrouppingSelection
@@ -307,21 +256,6 @@ namespace PAA
                     break;
             }
             return generation.Entities[i == 0 ? 0 : i - 1];
-        }
-
-        public void CheckDifference()
-        {
-            var count = 0;
-            var bestFitness = Entities[0].Fitness;
-            foreach (var entity in Entities)
-            {
-                if (entity.Fitness == bestFitness)
-                    count++;
-            }
-            var sameness = (Entities.Count * Parameters.DIFFERENCE_LEVEL) / 100;
-            Certainity = (double)count / Entities.Count * 100;
-            if (count >= sameness)
-                Parameters.CERTAINITY = true;
         }
     }
 }
