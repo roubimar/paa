@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 
@@ -57,39 +56,21 @@ namespace PAA
             {
                 CreateNewEntities(newGeneration, generation, i);
             }
-
-            //Elitism
+            
             Elitism(newGeneration, generation);
 
             newGeneration.Entities.Sort(EntityComparator.Instance);
             newGeneration.BestEntity = newGeneration.Entities.First();
-
-            bool best = false;
+            
             if (BestEntity == null || newGeneration.BestEntity.Fitness > BestEntity.Fitness)
             {
                 BestEntity = newGeneration.BestEntity;
-                PrintBest();
+                //PrintBest();
             }
 
             generationCount++;
             UpdateMutationFactor(newGeneration);
             return newGeneration;
-        }
-
-        private static int CalculateHamiltonLength(Entity counted, Entity referenced)
-        {
-            int hamiltonLength = 0;
-            for (int i = 0; i < counted.Genom.Length; i++)
-            {
-                if (counted.Genom[i] != referenced.Genom[i])
-                    hamiltonLength++;
-            }
-
-            if (referenced.Fitness * 0.7 > counted.Fitness)
-            {
-                return -1;
-            }
-            return hamiltonLength;
         }
 
         private void CreateNewEntities(Generation newGeneration, Generation generation, int i)
@@ -193,7 +174,7 @@ namespace PAA
         public void Run()
         {
             Evolve();
-            PrintBestSolution();
+            //PrintBestSolution();
         }
 
         /// <summary>

@@ -129,30 +129,81 @@ namespace PAA
         public static void Main(string[] args)
         {
             var generator = new InputGenerator();
-            var input = generator.GenerateInput(500, 260, 400);
-            input = inputP;
-            Console.WriteLine(input);
-            var solver = new SatSolver(input);
-            solver.Run();            
+            percentages = new double[tries];
+            for (int i = 0; i < tries; i++)
+            {
+                var input = generator.GenerateInput(100, 100, 400);
+                var solver = new SatSolver(input);
+                Console.WriteLine(input);
+                solver.RunTests(i);
+                Console.WriteLine();
+            }
+            Console.WriteLine(percentages.Average().ToString("0.00"));
+            Console.ReadLine();
         }
 
-        private void Run()
-        {
-            //var bruteForceSolver = new BruteForceSolver(weights, evaluationMethod, parametersDictionary);
-            //bruteForceSolver.Run();
+        private static int tries = 10;
+        private static double[] percentages;
 
+        public void RunTests(int index)
+        {
             var geneticAlgorithmSolver = new GeneticAlgorithmSolver(weights, evaluationMethod, parametersDictionary, argumentsDictionary);
-            while (Console.ReadLine() != "exit")
+
+            var tmpBestWeight = 0;
+            bool[] solution = null;
+            var bestWeights = new int[tries];
+            var satisfaction = new bool[tries];
+            var solutionPercentage = new double[tries];
+            for (int i = 0; i < tries; i++)
             {
                 ReadConfigFile();
                 geneticAlgorithmSolver.Run();
+                satisfaction[i] = GeneticAlgorithmSolver.BestEntity.Satisfability;
+                bestWeights[i] = satisfaction[i] ? GeneticAlgorithmSolver.BestEntity.Weight : 0;
+                if(GeneticAlgorithmSolver.BestEntity.Satisfability & tmpBestWeight < bestWeights[i])
+                {
+                    solution = GeneticAlgorithmSolver.BestEntity.Genom;
+                }
             }
+
+            var max = bestWeights.Max();
+            var satisfied = satisfaction.Any(x => x);
+            for (int i = 0; i < tries; i++)
+            {
+                if(satisfied && satisfaction[i])
+                {
+                    solutionPercentage[i] = (double)bestWeights[i] / max;
+                }
+                else if(satisfied)
+                {
+                    solutionPercentage[i] = 0;
+                }
+                else
+                {
+                    solutionPercentage[i] = 1;
+                }
+            }
+            Console.WriteLine(string.Join(" ", solutionPercentage.Select(x => x.ToString("0.00"))));
+            if ( solution == null)
+            {
+                
+                Console.WriteLine("There doesn't exist solution");
+            }
+            else
+            {
+                Console.WriteLine(string.Join(" ", solution.Select(x => x ? "1" : "0")));
+            }
+            Console.WriteLine(solutionPercentage.Average().ToString("0.00"));
+            percentages[index] = solutionPercentage.Average();
+
+
         }
+
 
         /// <summary>
         /// Reading configuration from cinfig file
         /// </summary>
-        private void ReadConfigFile()
+        public static void ReadConfigFile()
         {
             var lines = System.IO.File.ReadLines(@"configuration.config");
             var values = lines.Select(line => Regex.Replace(line, @".*\s=\s", "")).ToArray();
@@ -174,7 +225,7 @@ namespace PAA
             Parameters.SELECTION_TYPE = (SelectionEnum)Enum.Parse(typeof(SelectionEnum), values[14]);
         }
 
-        private const string inputP = "30 339 307 121 8 176 106 215 351 18 214 302 10 101 215 15 303 347 21 33 184 389 118 312 379 369 337 330 221 274 234 (!x010 | !x017 | !x024) & (!x007 | x023 | !x004) & (!x017 | !x008 | !x009) & (x009 | x011 | !x008) & (!x023 | x007 | x030) & (!x018 | !x003 | !x016) & (!x002 | x020 | !x005) & (x029 | !x003 | x019) & (x029 | !x004 | !x005) & (!x028 | !x026 | !x029) & (!x011 | x017 | !x008) & (!x020 | !x001 | x013) & (x004 | !x024 | !x003) & (x010 | x020 | x029) & (x011 | !x004 | !x024) & (x021 | !x020 | x002) & (!x015 | !x007 | !x018) & (!x005 | x011 | !x017) & (x003 | x014 | x010) & (!x002 | !x007 | !x012) & (x027 | !x003 | !x015) & (x029 | x009 | x008) & (!x016 | x009 | x029) & (x016 | !x020 | x010) & (x001 | !x015 | x030) & (!x027 | !x014 | x020) & (x030 | x015 | !x024) & (x005 | !x029 | !x007) & (x008 | !x018 | x007) & (x023 | x026 | !x001) & (x009 | x011 | !x028) & (x003 | !x008 | !x025) & (!x007 | x001 | x003) & (x022 | !x005 | x030) & (x030 | x015 | !x009) & (x019 | x030 | !x014) & (!x024 | x027 | !x016) & (!x023 | x011 | !x013) & (!x010 | !x011 | !x024) & (x001 | !x014 | !x010) & (!x029 | x027 | x016) & (x011 | x012 | !x002) & (!x004 | x022 | !x017) & (x004 | !x022 | x026) & (x006 | !x027 | x022) & (!x008 | !x005 | !x007) & (!x010 | !x023 | x002) & (!x029 | !x016 | !x004) & (x025 | !x026 | x006) & (!x007 | x011 | x001) & (!x022 | !x003 | !x008) & (x001 | x010 | x024) & (!x003 | x015 | !x006) & (x018 | x025 | !x013) & (!x010 | !x020 | x030) & (!x022 | !x010 | !x025) & (!x008 | x003 | x014) & (x001 | !x003 | x022) & (!x025 | !x023 | !x014) & (!x014 | !x003 | !x030) & (x025 | x008 | !x020) & (!x010 | x011 | !x007) & (!x029 | !x010 | x011) & (x007 | x019 | !x003) & (x023 | x012 | !x004) & (!x010 | !x012 | !x030) & (!x023 | x015 | !x018) & (!x030 | x018 | !x009) & (!x021 | !x002 | x014) & (!x017 | !x029 | !x007) & (x028 | x017 | !x010) & (!x019 | x023 | x026) & (!x016 | !x028 | !x004) & (!x017 | !x004 | x010) & (!x016 | !x005 | x028) & (!x025 | !x029 | x018) & (x026 | !x016 | !x020) & (x008 | !x010 | !x018) & (x003 | x011 | x012) & (x002 | x025 | x014) & (!x025 | x001 | !x018) & (x009 | x017 | x004) & (!x021 | !x003 | x018) & (!x016 | x015 | x014) & (x016 | !x007 | x013) & (x006 | x003 | !x004) & (!x010 | x024 | x017) & (!x007 | x017 | x002) & (!x006 | !x028 | !x009) & (x018 | x002 | x024) & (x014 | !x018 | !x002) & (!x019 | x025 | x015) & (x023 | x017 | !x004) & (x026 | !x004 | !x007) & (!x009 | x024 | !x017) & (x007 | !x016 | x020) & (x022 | !x026 | x017) & (!x015 | !x010 | !x030) & (x009 | x027 | x018) & (!x028 | x027 | x019) & (x024 | !x012 | !x005) & (!x001 | x003 | !x025) & (!x026 | x001 | x009) & (!x019 | x027 | !x003) & (!x023 | !x002 | !x017) & (x021 | x006 | !x022) & (x027 | x028 | x006) & (!x002 | !x022 | !x027) & (!x017 | !x030 | x028) & (x008 | !x013 | !x030) & (x022 | !x009 | x013) & (x016 | !x002 | !x023) & (x027 | x030 | !x012) & (!x028 | !x029 | x021) & (x006 | !x015 | x023) & (x020 | x019 | x029) & (x002 | x017 | !x004) & (!x011 | x007 | x006) & (x009 | x005 | !x002) & (x024 | x018 | !x006) & (!x001 | x009 | x003) & (!x007 | x029 | x028) & (!x010 | x025 | x022) & (x030 | x011 | x010) & (x008 | !x001 | !x016) & (x023 | x020 | x010) & (!x005 | !x025 | x013) & (!x024 | !x014 | x016) & (x027 | !x007 | x020) & (!x030 | x025 | x006) & (!x012 | x005 | x021) & (!x015 | !x004 | !x007) & (x024 | !x016 | x006) & (x021 | x014 | !x013) & (!x029 | x026 | x006) & (!x016 | !x005 | !x010) & (x010 | !x007 | !x028) & (x001 | x028 | x030) & (!x023 | !x018 | !x007) & (!x018 | !x010 | !x021) & (!x015 | !x026 | !x006) & (x012 | x014 | !x028) & (x001 | x016 | !x012) & (x001 | x027 | x014) & (!x029 | !x026 | !x019) & (x019 | x018 | x003) & (x009 | !x019 | !x013) & (!x002 | x026 | x018) & (!x023 | !x017 | x008) & (!x013 | !x009 | !x016)";
+        private const string inputP = "40 43 98 367 96 24 20 180 116 177 55 260 185 138 365 362 98 98 246 251 61 164 353 247 253 207 242 113 394 355 119 49 42 228 145 281 332 110 128 245 378 (!x011 | !x029 | !x014) & (x010 | x001 | !x016) & (x014 | x037 | !x013) & (!x007 | x040 | x008) & (x028 | x023 | x024) & (x036 | !x034 | !x018) & (x004 | !x030 | !x031) & (!x023 | !x022 | !x030) & (!x030 | !x014 | !x028) & (!x012 | x014 | x032) & (!x010 | !x036 | !x016) & (!x001 | x031 | x009) & (x001 | x040 | !x029) & (x036 | !x019 | x021) & (x030 | x032 | x016) & (!x021 | !x011 | !x025) & (!x027 | !x004 | x021) & (!x004 | x014 | x025) & (!x027 | !x011 | !x016) & (!x027 | !x017 | x007) & (!x004 | x010 | x021) & (x038 | x028 | x031) & (x023 | x025 | !x022) & (!x026 | x024 | !x021) & (!x006 | !x018 | x039) & (!x014 | !x018 | !x021) & (!x034 | !x006 | x007) & (x028 | x004 | x003) & (x011 | x024 | !x023) & (x029 | x030 | !x027) & (x012 | !x026 | !x040) & (!x025 | !x039 | !x031) & (x027 | !x015 | x001) & (!x039 | !x012 | x027) & (!x030 | x036 | x033) & (!x004 | x020 | !x035) & (!x001 | !x005 | x018) & (!x002 | !x010 | x023) & (!x007 | x011 | !x008) & (!x025 | !x032 | x004) & (x031 | !x035 | x017) & (!x007 | !x023 | x027) & (x011 | !x013 | !x022) & (!x030 | !x039 | !x008) & (!x001 | !x017 | x018) & (!x015 | !x028 | !x008) & (x017 | !x005 | !x040) & (x024 | x035 | !x032) & (x031 | !x035 | x011) & (x040 | !x002 | !x026) & (x023 | !x016 | !x011) & (!x024 | x004 | !x005) & (x025 | x040 | x020) & (!x031 | x028 | x005) & (x009 | x032 | !x021) & (x028 | !x007 | !x005) & (!x001 | x017 | x018) & (x011 | x009 | x031) & (x022 | x036 | x018) & (!x019 | x027 | !x033) & (x030 | x036 | x035) & (!x003 | x019 | x013) & (x022 | x034 | x031) & (!x029 | !x017 | !x011) & (!x016 | x021 | x012) & (!x015 | !x030 | x016) & (x014 | !x028 | x003) & (!x022 | x040 | !x014) & (!x024 | !x023 | !x009) & (x034 | x038 | x030)";
 
     }
 
